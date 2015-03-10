@@ -9,21 +9,16 @@ public class RouteMap {
 	private Map<City, List<String>> routes = new HashMap<City, List<String>>();
 	private List<String> possiblePath = new ArrayList<String>();
 	private Map<City, Country> location = new HashMap<City, Country>();
-	private List<String> allPossiblePaths = new ArrayList<String>();
-	private List<String> derived = new ArrayList<String>();
-	private List<String> visited = new ArrayList<String>();
-	private String paths = "";
-
 
 	public void insertPath (String source, String destination) {
 		addSource(source, destination);
-		routes.get(new City(source)).add(new String(destination));
-		routes.get(new City(destination)).add(new String(source));
+		routes.get(new City(source)).add(destination);
+		routes.get(new City(destination)).add(source);
 	}
 
 	public boolean hasPath (City source, City destination) {
-		if(routes.get(source) == null) return false;
-		return routes.get(source).indexOf(destination.getName()) >= 0;
+		return (routes.get(source) != null)
+                && routes.get(source).indexOf(destination.getName()) >= 0;
 	}
 
 	private void addSource (String place1, String place2) {
@@ -62,19 +57,15 @@ public class RouteMap {
 		visitedPaths.add(source.getName());
 
 		if(hasPath(source, destination))
-			return possiblePath.add(destination.getName()) && true;
+			return possiblePath.add(destination.getName());
 
 		for (String city : routes.get(source))
 			if((!(possiblePath.indexOf(city) >= 0))
 				&& (!(visitedPaths.indexOf(city) >= 0)) 
 				&& trackPath(new City(city),destination, visitedPaths))
-				return possiblePath.add(city) && true;
+				return possiblePath.add(city);
 
 		return false;
-	}
-
-	public void showPossiblePath() {
-		System.out.println(possiblePath);
 	}
 
 	private List<String> reversePath(String source) {
@@ -96,20 +87,9 @@ public class RouteMap {
 		return manupulatePath(source, destination, visitedPaths);
 	}
 
-	public boolean allPossiblePaths (City source, City destination, List<String> visitedPaths) throws CityNotFoundException {
-		if(!areCitiesPresent(source, destination)) return false;
-	
-		initStorage(source.getName());
-		boolean hasAnyPath = trackPath(source, destination, visitedPaths);
-		possiblePath = reversePath(source.getName());
-		return hasAnyPath;
-	}
-
-
 	private String manupulatePath(City source, City destination, List<String> visitedPaths) throws CityNotFoundException {
 		hasPossiblePath(source, destination, visitedPaths);
-		String path = stringifyPath();
-		return path;
+		return stringifyPath();
 	}
 
 	private String stringifyPath () {
@@ -150,46 +130,53 @@ public class RouteMap {
 		return words;
 	}
 
-	public boolean pathFinder(City start,City destination) throws CityNotFoundException {
-		System.out.println(start.getName());
-		boolean isAnyPath = false;
-
-		List<String> visitedPaths = new ArrayList<String>();
-		visitedPaths.add(start.getName());
-		isAnyPath = hasPossiblePath(start, destination, visitedPaths);
-		visitedPaths.clear(); visitedPaths.add(start.getName());
-		if(isAnyPath) paths += manupulatePath(start, destination, visitedPaths);
-
-		if(isAnyPath){
-			paths += ", ";
-			if(paths.split(",").length == 2 && !paths.split(", ")[0].equals(paths.split(",")[1])) {
-					isAnyPath = pathFinder(start, destination);	
-			}
-		}
-		return paths.length() == 0 ? false : true;
-	}
-
 	public List<String> findAllPaths(City source, City destination) throws CityNotFoundException {
-		List<String> derived = new ArrayList<String>();
-		
-		if (pathFinder(source, destination)) {
-			String[] d_paths = paths.split(", ");
-			for (String whole_path : d_paths) {
-				derived.add(whole_path);
-			}
-		}
+        List<String> collectionOfStations = new ArrayList<String>();
+        List<List<String>> collectionOfPaths = new ArrayList<List<String>>();
+        getPaths(collectionOfStations, collectionOfPaths, source, destination);
+        List<String> derivedPaths = new ArrayList<String>();
 
-		return derived;
+        for (List<String> d_path : collectionOfPaths) {
+            derivedPaths.add(join(d_path));
+        }
+        return derivedPaths;
 	}
-	// 	String city_name = source.getName();
-	// 	String countryOfSource = location.get(source).getName();
 
-	// 	for (String city : routes.get(source)) {
-	// 		visited.add(city_name);
-	// 		String path = city_name + "[" + countryOfSource + "]->" + manupulateAllPath(new City(city), destination);
-	// 		allPossiblePaths.add(path);
-	// 	}
+    private String join(List<String> derivedPaths) {
+        String path = "";
+        for (int counter = 0; counter < derivedPaths.size(); counter++) {
+            String cityName = derivedPaths.get(counter);
+            String cityLocation = cityName;
 
-	// 	return allPossiblePaths;
-	// }
+            if (location.get(new City(cityName)) != null) {
+                String country = location.get(new City(cityName)).getName() ;
+                cityLocation = cityName + "[" + country + "]";
+            }
+
+
+            if(counter < derivedPaths.size() - 1)
+                path += cityLocation + "->";
+            else
+                path += cityLocation;
+        }
+
+        return path;
+    }
+
+    private void getPaths(List<String> collectionOfStations, List<List<String>> collectionOfPaths, City source, City destination) {
+        collectionOfStations.add(source.getName());
+        if (source.getName().equals(destination.getName())) {
+            collectionOfPaths.add(new ArrayList<String>(collectionOfStations));
+            collectionOfStations.remove(source.getName());
+            return;
+        }
+
+        List<String> destinations = routes.get(source);
+        for (int i = 0; i < destinations.size(); i++) {
+            if (!collectionOfStations.contains(destinations.get(i))) {
+                getPaths(collectionOfStations, collectionOfPaths, new City(destinations.get(i)), destination);
+            }
+        }
+        collectionOfStations.remove(source.getName());
+    }
 }

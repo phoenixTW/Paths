@@ -2,6 +2,7 @@ package com.paths;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -139,7 +140,6 @@ public class PathsTest {
 
 		List<String> derivedPaths = map.findAllPaths(new City("Bangalore"), new City("Hongkong"));
 		assertEquals(paths.get(1), derivedPaths.get(0));
-		System.out.println(derivedPaths);
-		// assertEquals(paths.get(0), derivedPaths.get(1));
+		assertEquals(paths.get(0), derivedPaths.get(1));
 	}
 }
