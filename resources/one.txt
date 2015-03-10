@@ -1,2 +1,2 @@
-Bangalore, Mumbai
-Bangalore, Chennai
+Bangalore, Mumbai,300
+Bangalore, Chennai,300

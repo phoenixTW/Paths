@@ -9,6 +9,7 @@ public class RouteMap {
 	private Map<City, List<String>> routes = new HashMap<City, List<String>>();
 	private List<String> possiblePath = new ArrayList<String>();
 	private Map<City, Country> location = new HashMap<City, Country>();
+    private Map<City, CostManager> costManager = new HashMap<City, CostManager>();
 
 	public void insertPath (String source, String destination) {
 		addSource(source, destination);
@@ -178,5 +179,38 @@ public class RouteMap {
             }
         }
         collectionOfStations.remove(source.getName());
+    }
+
+    public void insertPath(String source, String destination, int cost) {
+        insertPath(source, destination);
+        addSourceCost(source, destination);
+        costManager.get(new City(source)).add(new City(destination), cost);
+        costManager.get(new City(destination)).add(new City(source), cost);
+    }
+
+    private void addSourceCost (String place1, String place2) {
+        if(costManager.get(new City(place1)) == null)
+            costManager.put(new City(place1), new CostManager());
+
+        if(costManager.get(new City(place2)) == null)
+            this.costManager.put(new City(place2), new CostManager());
+    }
+
+    public double getCost(String path) {
+        String[] stations = path.split("->");
+        int cost = 0;
+
+        for (int count = 0; count < stations.length; count++) {
+            City from = (count == 0) ? null : new City(stations[count - 1]);
+            City to = new City(stations[count]);
+            cost += getCostBetweenStations(from, to);
+        }
+
+        return cost;
+    }
+
+    private int getCostBetweenStations(City from, City to) {
+        if (from == null) return 0;
+        return costManager.get(from).get(to);
     }
 }

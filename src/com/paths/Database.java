@@ -2,13 +2,13 @@ package com.paths;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class Database{
 	String fileLocation = null;
 	String countryLocation = null;
 	List<String> paths = new ArrayList<String>();
-	List<String> countries = new ArrayList<String>();
 
 	Database (String pathName){
 		this.fileLocation = pathName;
@@ -20,7 +20,7 @@ class Database{
 	}
 
 	public String readFile (String filename) throws IOException {
-		String text = null;
+		String text;
 		File thisFile = new File("./resources/" + filename);
 		FileReader fr = null;
 		
@@ -41,6 +41,7 @@ class Database{
 
 	public List<String> getPaths (String data) {
 		String[] lines = data.split("\r\n");
+//        paths = Arrays.asList(lines);
 
 		for (String line : lines)
 			paths.add(line);
@@ -48,24 +49,24 @@ class Database{
 		return paths;
 	}
 
-	public List<String> getCountry (String data) {
-		String[] lines = data.split("\r\n");
-
-		for (String line : lines)
-			countries.add(line);
-
-		return countries;
-	}
+//	public List<String> getCountry (String data) {
+//		String[] lines = data.split("\r\n");
+//
+//		for (String line : lines)
+//			countries.add(line);
+//
+//		return countries;
+//	}
 
 	public RouteMap insertPath () throws IOException {
 		String data = readFile(fileLocation);
 		RouteMap map = new RouteMap();
 
-		return (countryLocation != null) ? whenCountryPresent(map, data) : whenCountryNotPresent(map, data);
+        return (countryLocation != null) ? whenCountryPresent(map, data) : whenCountryNotPresent(map, data);
 	}
 
 	private RouteMap whenCountryPresent(RouteMap map, String cityData) throws IOException {
-		map = whenCountryNotPresent(map, cityData);
+        map = whenCountryNotPresent(map, cityData);
 		
 		String data = readFile(countryLocation);
 		String[] cityWithCountries = data.split("\r\n");
@@ -76,11 +77,14 @@ class Database{
 	}
 
 	private RouteMap whenCountryNotPresent(RouteMap map, String data) throws IOException {
-		List<String> collectionOfPaths = getPaths(data);
+        List<String> collectionOfPaths = getPaths(data);
 
 		for (String path : collectionOfPaths) {
  			String[] words = splitByComma(path);
- 			map.insertPath(words[0], words[1]);
+            if (words.length == 3)
+     			map.insertPath(words[0], words[1], Integer.parseInt(words[2]));
+            else
+                map.insertPath(words[0], words[1]);
 		}
 
 		return map;
