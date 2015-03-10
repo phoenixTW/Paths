@@ -1,9 +1,7 @@
 package com.paths;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.util.List;
+import javax.print.DocFlavor;
+import java.util.*;
 
 public class RouteMap {
 	private Map<City, List<String>> routes = new HashMap<City, List<String>>();
@@ -212,5 +210,31 @@ public class RouteMap {
     private int getCostBetweenStations(City from, City to) {
         if (from == null) return 0;
         return costManager.get(from).get(to);
+    }
+    public double getCostHavingCountry(String path) {
+        String[] stations = path.split("->");
+        int cost = 0;
+
+        for (int count = 0; count < stations.length; count++) {
+            City from = (count == 0) ? null : new City(stations[count - 1].split("\\[")[0]);
+            City to = new City(stations[count].split("\\[")[0]);
+            cost += getCostBetweenStations(from, to);
+        }
+
+        return cost;
+    }
+
+    public TreeMap<String, Integer> sortByCost(List<String> derivedPaths) {
+        Map<String, Integer> sortedOrder = new HashMap<String, Integer>();
+        ValueComparator vc = new ValueComparator(sortedOrder);
+        TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>();
+
+        for (String path : derivedPaths) {
+            int cost = (int) getCostHavingCountry(path);
+            sortedOrder.put(path, cost);
+        }
+
+        sortedMap.putAll(sortedOrder);
+        return sortedMap;
     }
 }

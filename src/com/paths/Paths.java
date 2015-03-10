@@ -2,6 +2,7 @@ package com.paths;
 
 import java.util.List;
 import java.io.*;
+import java.util.TreeMap;
 
 class Paths {
 	public static void main(String[] args) throws IOException {
@@ -22,10 +23,16 @@ class Paths {
 
         try{
             List<String> paths = map.findAllPaths(source, destination);
+            TreeMap<String, Integer> sortedOrder = map.sortByCost(paths);
+            int count = 0;
+            String[] sortedArray = new String[0];
+            sortedArray = sortedOrder.keySet().toArray(sortedArray);
 
-            for (int counter = 0; counter < paths.size(); counter++){
-                System.out.println((counter + 1) + ". " + paths.get(counter));
-			}
+            for (int i = sortedArray.length-1; i > -1; i--){
+                System.out.println(++count + ". " + sortedArray[i]);
+                System.out.println("Total Costs: " + sortedOrder.get(sortedArray[i]));
+
+            }
 		}
 
 		catch(CityNotFoundException e) {
